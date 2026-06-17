@@ -1,4 +1,4 @@
-import { Page, expect } from '@playwright/test';
+import { expect, Page } from '@playwright/test';
 import { routes } from '../utils/routes';
 
 export class DashboardPage {
@@ -21,5 +21,23 @@ export class DashboardPage {
 
   async expectProtectedDataNotVisible() {
     await expect(this.page.getByText(/saldo|receitas|despesas/i)).not.toBeVisible();
+  }
+
+  async expectIncomeValue(value: string) {
+    await expect(this.page.getByText(new RegExp(value.replace('.', '[,.]')))).toBeVisible();
+  }
+
+  async expectExpenseValue(value: string) {
+    await expect(this.page.getByText(new RegExp(value.replace('.', '[,.]')))).toBeVisible();
+  }
+
+  async expectBalanceValue(value: string) {
+    await expect(this.page.getByText(new RegExp(value.replace('.', '[,.]')))).toBeVisible();
+  }
+
+  async expectDashboardContainsFinancialSummary() {
+    await expect(this.page.getByText(/receitas|entradas/i)).toBeVisible();
+    await expect(this.page.getByText(/despesas|saídas|saidas/i)).toBeVisible();
+    await expect(this.page.getByText(/saldo/i)).toBeVisible();
   }
 }
