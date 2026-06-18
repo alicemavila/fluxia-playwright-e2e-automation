@@ -1,6 +1,6 @@
 # Fluxia Playwright E2E Automation
 
-Automação de testes E2E, API e regressão crítica do **Fluxia App**, utilizando **Playwright + TypeScript**.
+Automação de testes E2E, API, acessibilidade, compatibilidade e regressão crítica do **Fluxia App**, utilizando **Playwright + TypeScript**.
 
 Este projeto foi estruturado com foco em boas práticas de QA, automação incremental, reutilização de código, execução em CI/CD e priorização baseada em risco.
 
@@ -18,7 +18,8 @@ A automação deste repositório foi planejada com base em documentação de QA 
 * Matriz de Riscos;
 * Estratégia de Automação;
 * Priorização de cenários críticos;
-* Execução em pipeline CI/CD.
+* Execução em pipeline CI/CD;
+* Evidências automáticas de execução.
 
 ---
 
@@ -36,6 +37,10 @@ A automação será evolutiva e baseada em risco, iniciando pelos cenários de m
 * Verificar atualização correta do dashboard;
 * Validar permissões entre usuários Free e PRO;
 * Automatizar fluxos críticos de importação CSV;
+* Validar endpoints, status codes, payloads e contratos de API;
+* Validar segurança funcional com token inválido, token expirado e autorização entre usuários;
+* Executar checks básicos de acessibilidade com axe-core;
+* Validar compatibilidade cross-browser e mobile responsivo;
 * Apoiar regressão crítica em ciclos ágeis;
 * Gerar evidências automáticas de execução;
 * Executar testes via GitHub Actions.
@@ -44,15 +49,16 @@ A automação será evolutiva e baseada em risco, iniciando pelos cenários de m
 
 ## Stack Utilizada
 
-| Tecnologia                    | Uso                                    |
-| ----------------------------- | -------------------------------------- |
-| Playwright                    | Automação E2E Web, API e cross-browser |
-| TypeScript                    | Linguagem principal dos testes         |
-| Node.js                       | Ambiente de execução                   |
-| dotenv                        | Gerenciamento de variáveis de ambiente |
-| GitHub Actions                | Pipeline CI/CD                         |
-| HTML Report                   | Relatório de execução dos testes       |
-| Screenshots / Videos / Traces | Evidências automáticas em falhas       |
+| Tecnologia                    | Uso                                                       |
+| ----------------------------- | --------------------------------------------------------- |
+| Playwright                    | Automação E2E Web, API, cross-browser e mobile responsivo |
+| TypeScript                    | Linguagem principal dos testes                            |
+| Node.js                       | Ambiente de execução                                      |
+| dotenv                        | Gerenciamento de variáveis de ambiente                    |
+| @axe-core/playwright          | Checks automatizados de acessibilidade básica             |
+| GitHub Actions                | Pipeline CI/CD                                            |
+| HTML Report                   | Relatório de execução dos testes                          |
+| Screenshots / Videos / Traces | Evidências automáticas em falhas                          |
 
 ---
 
@@ -84,6 +90,7 @@ Não é objetivo automatizar 100% dos casos de teste no primeiro ciclo. A estrat
 | `@permissao`       | Cenários Free/PRO                         |
 | `@csv`             | Cenários de importação de CSV             |
 | `@api`             | Cenários de API                           |
+| `@seguranca`       | Cenários de segurança funcional           |
 | `@a11y`            | Cenários de acessibilidade básica         |
 | `@compatibilidade` | Cenários cross-browser ou responsivos     |
 
@@ -101,15 +108,16 @@ A primeira fase da automação contempla os cenários de autenticação e sessã
 | CT-014 | Sessão expirada redireciona para login                   | P1         |
 | CT-100 | Bloquear acesso direto a rota protegida sem autenticação | P1         |
 
-As próximas fases contemplam:
+As fases seguintes contemplam:
 
 * transações;
 * dashboard financeiro;
 * cálculos com valores decimais;
 * permissões Free/PRO;
 * importação CSV;
-* segurança funcional;
 * API;
+* segurança funcional;
+* acessibilidade;
 * compatibilidade responsiva.
 
 ---
@@ -125,24 +133,38 @@ fluxia-playwright-e2e-automation/
 │   ├── transactions/
 │   ├── permissions/
 │   ├── csv/
-│   └── api/
+│   ├── api/
+│   ├── accessibility/
+│   └── compatibility/
 │
 ├── pages/
 │   ├── LoginPage.ts
 │   ├── DashboardPage.ts
 │   ├── TransactionsPage.ts
+│   ├── PermissionsPage.ts
+│   ├── ImportCsvPage.ts
 │   └── BasePage.ts
 │
 ├── fixtures/
 │   ├── users.ts
-│   └── transactions.ts
+│   ├── transactions.ts
+│   ├── financial-transactions.ts
+│   └── api-payloads.ts
 │
 ├── data/
 │   └── csv/
+│       ├── empty.csv
+│       └── missing-required-columns.csv
 │
 ├── utils/
 │   ├── routes.ts
-│   └── test-data.ts
+│   ├── api-routes.ts
+│   ├── api-client.ts
+│   ├── auth.ts
+│   ├── money.ts
+│   ├── csv-fixtures.ts
+│   ├── contract-assertions.ts
+│   └── a11y.ts
 │
 ├── .github/
 │   └── workflows/
@@ -153,6 +175,7 @@ fluxia-playwright-e2e-automation/
 ├── .env.example
 ├── .gitignore
 ├── package.json
+├── package-lock.json
 └── README.md
 ```
 
@@ -228,7 +251,16 @@ FREE_USER_PASSWORD=Fluxia@12345
 PRO_USER_EMAIL=pro.user@fluxia.test
 PRO_USER_PASSWORD=Fluxia@12345
 
+FINANCIAL_USER_EMAIL=financial.user@fluxia.test
+FINANCIAL_USER_PASSWORD=Fluxia@12345
+
+CSV_USER_EMAIL=csv.user@fluxia.test
+CSV_USER_PASSWORD=Fluxia@12345
+
 INVALID_PASSWORD=SenhaErrada@123
+
+API_BASE_PATH=/api
+EXPIRED_TOKEN=
 ```
 
 ### Arquivo `.env`
@@ -244,10 +276,21 @@ FREE_USER_PASSWORD=senha_free
 PRO_USER_EMAIL=usuario_pro
 PRO_USER_PASSWORD=senha_pro
 
+FINANCIAL_USER_EMAIL=usuario_financeiro
+FINANCIAL_USER_PASSWORD=senha_financeiro
+
+CSV_USER_EMAIL=usuario_csv
+CSV_USER_PASSWORD=senha_csv
+
 INVALID_PASSWORD=SenhaErrada@123
+
+API_BASE_PATH=/api
+EXPIRED_TOKEN=token_expirado_opcional
 ```
 
 > Importante: o arquivo `.env` não deve ser versionado no GitHub.
+
+O `EXPIRED_TOKEN` é opcional e deve ser utilizado apenas quando houver um token expirado real fornecido pelo ambiente de homologação ou pelo time de desenvolvimento.
 
 ---
 
@@ -320,6 +363,42 @@ Executar apenas testes de autenticação:
 npm run test:auth
 ```
 
+Executar testes de CSV:
+
+```bash
+npm run test:csv
+```
+
+Executar testes de API e segurança:
+
+```bash
+npm run test:api
+```
+
+Executar testes de acessibilidade:
+
+```bash
+npm run test:a11y
+```
+
+Executar testes de compatibilidade:
+
+```bash
+npm run test:compatibility
+```
+
+Executar testes mobile responsivos:
+
+```bash
+npm run test:mobile
+```
+
+Executar testes cross-browser:
+
+```bash
+npm run test:cross-browser
+```
+
 Abrir relatório HTML:
 
 ```bash
@@ -338,6 +417,12 @@ npm run test:report
   "test:smoke": "playwright test --grep @smoke",
   "test:p1": "playwright test --grep @automacao_p1",
   "test:auth": "playwright test tests/auth",
+  "test:csv": "playwright test tests/csv",
+  "test:api": "playwright test tests/api",
+  "test:a11y": "playwright test tests/accessibility",
+  "test:compatibility": "playwright test tests/compatibility",
+  "test:mobile": "playwright test --project=mobile-chrome --project=mobile-safari",
+  "test:cross-browser": "playwright test --project=chromium --project=firefox --project=webkit",
   "test:report": "playwright show-report"
 }
 ```
@@ -373,6 +458,11 @@ A pipeline pode ser executada automaticamente em:
 * push na branch `main`;
 * pull request para `main`.
 
+O pipeline foi dividido em dois jobs principais:
+
+1. **P1 Regression Tests**: executa a regressão P1 no Chromium.
+2. **Accessibility and Compatibility Tests**: executa acessibilidade e compatibilidade após a regressão P1.
+
 Exemplo de workflow:
 
 ```yaml
@@ -387,16 +477,29 @@ on:
       - main
 
 jobs:
-  playwright-tests:
+  p1-tests:
+    name: P1 Regression Tests
     runs-on: ubuntu-latest
 
     env:
       BASE_URL: ${{ secrets.BASE_URL }}
+
       FREE_USER_EMAIL: ${{ secrets.FREE_USER_EMAIL }}
       FREE_USER_PASSWORD: ${{ secrets.FREE_USER_PASSWORD }}
+
       PRO_USER_EMAIL: ${{ secrets.PRO_USER_EMAIL }}
       PRO_USER_PASSWORD: ${{ secrets.PRO_USER_PASSWORD }}
+
+      FINANCIAL_USER_EMAIL: ${{ secrets.FINANCIAL_USER_EMAIL }}
+      FINANCIAL_USER_PASSWORD: ${{ secrets.FINANCIAL_USER_PASSWORD }}
+
+      CSV_USER_EMAIL: ${{ secrets.CSV_USER_EMAIL }}
+      CSV_USER_PASSWORD: ${{ secrets.CSV_USER_PASSWORD }}
+
       INVALID_PASSWORD: ${{ secrets.INVALID_PASSWORD }}
+
+      API_BASE_PATH: ${{ secrets.API_BASE_PATH }}
+      EXPIRED_TOKEN: ${{ secrets.EXPIRED_TOKEN }}
 
     steps:
       - name: Checkout repository
@@ -413,14 +516,68 @@ jobs:
       - name: Install Playwright browsers
         run: npx playwright install --with-deps
 
-      - name: Run Playwright smoke tests
-        run: npm run test:smoke
+      - name: Run P1 tests on Chromium
+        run: npm run test:p1 -- --project=chromium
 
-      - name: Upload Playwright report
+      - name: Upload P1 Playwright report
         uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: playwright-report
+          name: playwright-report-p1
+          path: playwright-report/
+          retention-days: 7
+
+  accessibility-compatibility:
+    name: Accessibility and Compatibility Tests
+    runs-on: ubuntu-latest
+    needs: p1-tests
+
+    env:
+      BASE_URL: ${{ secrets.BASE_URL }}
+
+      FREE_USER_EMAIL: ${{ secrets.FREE_USER_EMAIL }}
+      FREE_USER_PASSWORD: ${{ secrets.FREE_USER_PASSWORD }}
+
+      PRO_USER_EMAIL: ${{ secrets.PRO_USER_EMAIL }}
+      PRO_USER_PASSWORD: ${{ secrets.PRO_USER_PASSWORD }}
+
+      FINANCIAL_USER_EMAIL: ${{ secrets.FINANCIAL_USER_EMAIL }}
+      FINANCIAL_USER_PASSWORD: ${{ secrets.FINANCIAL_USER_PASSWORD }}
+
+      CSV_USER_EMAIL: ${{ secrets.CSV_USER_EMAIL }}
+      CSV_USER_PASSWORD: ${{ secrets.CSV_USER_PASSWORD }}
+
+      INVALID_PASSWORD: ${{ secrets.INVALID_PASSWORD }}
+
+      API_BASE_PATH: ${{ secrets.API_BASE_PATH }}
+      EXPIRED_TOKEN: ${{ secrets.EXPIRED_TOKEN }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install Playwright browsers
+        run: npx playwright install --with-deps
+
+      - name: Run accessibility tests on Chromium
+        run: npm run test:a11y -- --project=chromium
+
+      - name: Run compatibility tests on configured browsers and viewports
+        run: npm run test:compatibility
+
+      - name: Upload Accessibility and Compatibility report
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: playwright-report-a11y-compatibility
           path: playwright-report/
           retention-days: 7
 ```
@@ -441,12 +598,26 @@ Secrets recomendados:
 
 ```text
 BASE_URL
+
 FREE_USER_EMAIL
 FREE_USER_PASSWORD
+
 PRO_USER_EMAIL
 PRO_USER_PASSWORD
+
+FINANCIAL_USER_EMAIL
+FINANCIAL_USER_PASSWORD
+
+CSV_USER_EMAIL
+CSV_USER_PASSWORD
+
 INVALID_PASSWORD
+
+API_BASE_PATH
+EXPIRED_TOKEN
 ```
+
+O secret `EXPIRED_TOKEN` é opcional e deve ser usado apenas quando houver um token expirado real para validação de segurança.
 
 ---
 
@@ -466,6 +637,65 @@ Appium será considerado apenas caso exista aplicativo mobile nativo Android/iOS
 
 ---
 
+## Estratégia de API e Segurança
+
+A automação de API tem como objetivo validar contratos, status codes, payloads e regras de autorização.
+
+Cenários cobertos:
+
+* login com credenciais válidas;
+* login com senha inválida;
+* consulta de dashboard via API;
+* criação de transação via API;
+* exclusão de transação via API;
+* criação de meta para usuário PRO;
+* bloqueio de meta para usuário Free;
+* rejeição de token inválido;
+* rejeição de token expirado;
+* bloqueio de acesso entre usuários;
+* invalidação de sessão no logout;
+* validação de contrato de resposta.
+
+---
+
+## Estratégia de Acessibilidade
+
+A acessibilidade automatizada é realizada com `@axe-core/playwright`.
+
+Os checks cobrem violações comuns relacionadas a:
+
+* WCAG 2.0 A;
+* WCAG 2.0 AA;
+* WCAG 2.1 A;
+* WCAG 2.1 AA;
+* labels;
+* roles;
+* contraste básico;
+* estrutura semântica;
+* problemas críticos ou sérios de acessibilidade.
+
+> Observação: os checks automatizados não substituem validação manual com teclado, leitor de tela e análise humana de usabilidade acessível.
+
+---
+
+## Estratégia de Compatibilidade
+
+A compatibilidade é validada com os projetos configurados no `playwright.config.ts`.
+
+Coberturas previstas:
+
+* Chromium;
+* Firefox;
+* WebKit;
+* mobile Chrome;
+* mobile Safari;
+* viewports responsivos;
+* carregamento de login;
+* carregamento de dashboard;
+* validação básica dos principais componentes em diferentes ambientes.
+
+---
+
 ## Boas Práticas Aplicadas
 
 Este projeto utiliza boas práticas de automação, como:
@@ -479,7 +709,11 @@ Este projeto utiliza boas práticas de automação, como:
 * evidências automáticas;
 * integração com CI/CD;
 * reutilização de massa de dados;
-* seletores orientados à acessibilidade, como `getByRole` e `getByLabel`.
+* geração dinâmica de massa para CSV e transações;
+* validações de contrato para API;
+* seletores orientados à acessibilidade, como `getByRole` e `getByLabel`;
+* uso de usuários específicos para reduzir risco de massa inconsistente;
+* execução cross-browser e mobile responsiva.
 
 ---
 
@@ -525,28 +759,37 @@ Este projeto utiliza boas práticas de automação, como:
 * Validar payloads;
 * Validar token inválido;
 * Validar token expirado;
-* Validar autorização entre usuários.
+* Validar autorização entre usuários;
+* Validar contrato das respostas;
+* Validar invalidação de sessão no logout.
 
 ### Fase 6 — Acessibilidade e Compatibilidade
 
 * Execução cross-browser;
 * Execução em viewports mobile;
 * Checks básicos de acessibilidade;
-* Validação de foco, labels e navegação por teclado.
+* Validação de foco, labels e navegação por teclado;
+* Validação responsiva em mobile web/PWA.
 
 ---
 
 ## Status do Projeto
 
-Projeto em desenvolvimento.
+Projeto em desenvolvimento evolutivo.
 
 Status atual:
 
-* Setup inicial do Playwright;
-* Estrutura base definida;
+* Setup inicial do Playwright concluído;
+* Estrutura base definida com Page Object Model;
 * Estratégia de automação documentada;
-* Cenários P1 priorizados;
-* Primeira suíte de autenticação em construção.
+* Cenários P1 priorizados por risco;
+* Suíte de autenticação estruturada;
+* Cenários críticos de transações e dashboard em evolução;
+* Permissões Free/PRO estruturadas;
+* Importação CSV estruturada;
+* API e segurança estruturadas;
+* Acessibilidade e compatibilidade em implementação;
+* Pipeline CI/CD configurado com GitHub Actions.
 
 ---
 
@@ -556,7 +799,7 @@ Status atual:
 QA Engineer Freelancer
 
 GitHub: [@alicemavila](https://github.com/alicemavila)
-Linkedin: [Alice Monteiro](https://www.linkedin.com/in/alice-m-223157119/)
+LinkedIn: [Alice Monteiro](https://www.linkedin.com/in/alice-m-223157119/)
 
 ---
 
