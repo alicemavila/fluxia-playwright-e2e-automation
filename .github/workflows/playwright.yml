@@ -30,6 +30,9 @@ jobs:
 
       INVALID_PASSWORD: ${{ secrets.INVALID_PASSWORD }}
 
+      API_BASE_PATH: ${{ secrets.API_BASE_PATH }}
+      EXPIRED_TOKEN: ${{ secrets.EXPIRED_TOKEN }}
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4

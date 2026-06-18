@@ -11,6 +11,7 @@
     "test:p1": "playwright test --grep @automacao_p1",
     "test:csv": "playwright test tests/csv",
     "test:auth": "playwright test tests/auth",
+    "test:api": "playwright test tests/api",
     "test:report": "playwright show-report"
   },
   "keywords": [],
