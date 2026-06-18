@@ -12,6 +12,10 @@
     "test:csv": "playwright test tests/csv",
     "test:auth": "playwright test tests/auth",
     "test:api": "playwright test tests/api",
+    "test:a11y": "playwright test tests/accessibility",
+    "test:compatibility": "playwright test tests/compatibility",
+    "test:mobile": "playwright test --project=mobile-chrome --project=mobile-safari",
+    "test:cross-browser": "playwright test --project=chromium --project=firefox --project=webkit",
     "test:report": "playwright show-report"
   },
   "keywords": [],
@@ -19,6 +23,7 @@
   "license": "ISC",
   "type": "commonjs",
   "devDependencies": {
+    "@axe-core/playwright": "^4.11.3",
     "@playwright/test": "latest",
     "@types/node": "^25.9.3",
     "dotenv": "latest",

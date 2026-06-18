@@ -556,6 +556,7 @@ Status atual:
 QA Engineer Freelancer
 
 GitHub: [@alicemavila](https://github.com/alicemavila)
+Linkedin: [Alice Monteiro](https://www.linkedin.com/in/alice-m-223157119/)
 
 ---
 

@@ -10,7 +10,8 @@ on:
       - main
 
 jobs:
-  playwright-tests:
+  p1-tests:
+    name: P1 Regression Tests
     runs-on: ubuntu-latest
 
     env:
@@ -48,14 +49,68 @@ jobs:
       - name: Install Playwright browsers
         run: npx playwright install --with-deps
 
-      - name: Run Playwright P1 tests
-        run: npm run test:p1
+      - name: Run P1 tests on Chromium
+        run: npm run test:p1 -- --project=chromium
 
-      - name: Upload Playwright report
+      - name: Upload P1 Playwright report
         uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: playwright-report
+          name: playwright-report-p1
+          path: playwright-report/
+          retention-days: 7
+
+  accessibility-compatibility:
+    name: Accessibility and Compatibility Tests
+    runs-on: ubuntu-latest
+    needs: p1-tests
+
+    env:
+      BASE_URL: ${{ secrets.BASE_URL }}
+
+      FREE_USER_EMAIL: ${{ secrets.FREE_USER_EMAIL }}
+      FREE_USER_PASSWORD: ${{ secrets.FREE_USER_PASSWORD }}
+
+      PRO_USER_EMAIL: ${{ secrets.PRO_USER_EMAIL }}
+      PRO_USER_PASSWORD: ${{ secrets.PRO_USER_PASSWORD }}
+
+      FINANCIAL_USER_EMAIL: ${{ secrets.FINANCIAL_USER_EMAIL }}
+      FINANCIAL_USER_PASSWORD: ${{ secrets.FINANCIAL_USER_PASSWORD }}
+
+      CSV_USER_EMAIL: ${{ secrets.CSV_USER_EMAIL }}
+      CSV_USER_PASSWORD: ${{ secrets.CSV_USER_PASSWORD }}
+
+      INVALID_PASSWORD: ${{ secrets.INVALID_PASSWORD }}
+
+      API_BASE_PATH: ${{ secrets.API_BASE_PATH }}
+      EXPIRED_TOKEN: ${{ secrets.EXPIRED_TOKEN }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install Playwright browsers
+        run: npx playwright install --with-deps
+
+      - name: Run accessibility tests on Chromium
+        run: npm run test:a11y -- --project=chromium
+
+      - name: Run compatibility tests on configured browsers and viewports
+        run: npm run test:compatibility
+
+      - name: Upload Accessibility and Compatibility report
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: playwright-report-a11y-compatibility
           path: playwright-report/
           retention-days: 7
 ```
