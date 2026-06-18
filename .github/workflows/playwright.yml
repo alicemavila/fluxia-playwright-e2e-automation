@@ -14,10 +14,16 @@ jobs:
 
     env:
       BASE_URL: ${{ secrets.BASE_URL }}
+
       FREE_USER_EMAIL: ${{ secrets.FREE_USER_EMAIL }}
       FREE_USER_PASSWORD: ${{ secrets.FREE_USER_PASSWORD }}
+
       PRO_USER_EMAIL: ${{ secrets.PRO_USER_EMAIL }}
       PRO_USER_PASSWORD: ${{ secrets.PRO_USER_PASSWORD }}
+
+      FINANCIAL_USER_EMAIL: ${{ secrets.FINANCIAL_USER_EMAIL }}
+      FINANCIAL_USER_PASSWORD: ${{ secrets.FINANCIAL_USER_PASSWORD }}
+
       INVALID_PASSWORD: ${{ secrets.INVALID_PASSWORD }}
 
     steps:
