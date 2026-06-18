@@ -3,7 +3,10 @@ export const routes = {
   dashboard: '/dashboard',
   transactions: '/transactions',
   categories: '/categories',
+
   goals: '/goals',
   recurrences: '/recurrences',
   importCsv: '/import',
+
+  upgrade: '/upgrade',
 };
