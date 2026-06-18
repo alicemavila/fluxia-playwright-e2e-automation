@@ -9,6 +9,7 @@
     "test:debug": "playwright test --debug",
     "test:smoke": "playwright test --grep @smoke",
     "test:p1": "playwright test --grep @automacao_p1",
+    "test:csv": "playwright test tests/csv",
     "test:auth": "playwright test tests/auth",
     "test:report": "playwright show-report"
   },

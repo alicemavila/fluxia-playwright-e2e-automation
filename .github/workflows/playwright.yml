@@ -1,3 +1,4 @@
+```yaml
 name: Playwright Tests
 
 on:
@@ -24,6 +25,9 @@ jobs:
       FINANCIAL_USER_EMAIL: ${{ secrets.FINANCIAL_USER_EMAIL }}
       FINANCIAL_USER_PASSWORD: ${{ secrets.FINANCIAL_USER_PASSWORD }}
 
+      CSV_USER_EMAIL: ${{ secrets.CSV_USER_EMAIL }}
+      CSV_USER_PASSWORD: ${{ secrets.CSV_USER_PASSWORD }}
+
       INVALID_PASSWORD: ${{ secrets.INVALID_PASSWORD }}
 
     steps:
@@ -41,8 +45,8 @@ jobs:
       - name: Install Playwright browsers
         run: npx playwright install --with-deps
 
-      - name: Run Playwright smoke tests
-        run: npm run test:smoke
+      - name: Run Playwright P1 tests
+        run: npm run test:p1
 
       - name: Upload Playwright report
         uses: actions/upload-artifact@v4
@@ -51,3 +55,4 @@ jobs:
           name: playwright-report
           path: playwright-report/
           retention-days: 7
+```
